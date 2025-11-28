@@ -1,0 +1,70 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Milky Shaky Drinks - {% block title %}{% endblock %}</title>
+    <!-- Load Tailwind CSS via CDN for quick, funky styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f3f1; /* Light, creamy background */
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <!-- Navigation Bar -->
+    <nav class="bg-blue-600 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo/Brand -->
+                <a href="{{ url_for('index') }}" class="flex-shrink-0 text-white text-3xl font-extrabold tracking-wider rounded-lg p-1 transition duration-150 hover:bg-blue-700">
+                    <span class="text-yellow-200">Milky</span> Shaky
+                </a>
+                <!-- Nav Links -->
+                <div class="flex items-center space-x-4">
+                    {% if current_user.is_authenticated %}
+
+                    {% if current_user.is_manager %}
+                         <a href="{{ url_for('admin_reports') }}" class="text-yellow-300 hover:bg-blue-500 px-3 py-2 rounded-md text-sm font-bold transition duration-150">Reports</a>
+                            <a href="{{ url_for('admin_dashboard') }}" class="text-yellow-300 hover:bg-blue-500 px-3 py-2 rounded-md text-sm font-bold transition duration-150">Admin Dashboard</a>
+                    {% endif %}
+                        <a href="{{ url_for('order') }}" class="text-white hover:bg-blue-500 px-3 py-2 rounded-md text-sm font-medium transition duration-150">Order Milkshake</a>
+                        <a href="{{ url_for('orders') }}" class="text-white hover:bg-blue-500 px-3 py-2 rounded-md text-sm font-medium transition duration-150">My Orders</a>
+                        <a href="{{ url_for('logout') }}" class="text-white hover:bg-blue-500 px-3 py-2 rounded-md text-sm font-medium transition duration-150">Logout</a>
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="text-white hover:bg-blue-500 px-3 py-2 rounded-md text-sm font-medium transition duration-150">Login</a>
+                        <a href="{{ url_for('register') }}" class="bg-blue-50 text-blue-700 hover:bg-blue-100 px-3 py-2 rounded-full text-sm font-bold shadow-md transition duration-150">Create Account</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow container mx-auto p-4 sm:p-8">
+        <!-- Flashed Messages (Success, Error, Info) -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="mb-4">
+                    {% for category, message in messages %}
+                        <div class="p-4 rounded-lg shadow-md text-white font-semibold {% if category == 'success' %}bg-green-500{% elif category == 'error' %}bg-red-500{% else %}bg-blue-500{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white p-4 mt-8">
+        <div class="max-w-7xl mx-auto text-center text-sm">
+            &copy; {{ moment().format('YYYY') }} Milky Shaky Drinks. All rights reserved.
+        </div>
+    </footer>
+</body>
+</html>

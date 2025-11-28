@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto py-8">
+    <h1 class="text-3xl font-bold mb-6">Admin & Lookup Management </h1>
+
+    <div class="grid grid-cols-2 gap-6 mb-8">
+        
+        <div class="bg-white p-6 rounded shadow">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold">Milkshake Flavours</h2>
+                <a href="{{ url_for('admin_lookup_edit') }}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">+ Add New</a>
+            </div>
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Value</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for item in items if item.type == 'Flavour' or item.type == 'Consistency' %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ item.name }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ item.type }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            R{{ '%.2f'|format(item.value or 0) }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 flex space-x-2">
+                            <span class="text-red-600 cursor-pointer">Delete</span>
+                            <a href="{{ url_for('admin_lookup_edit', item_id=item.id) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="bg-white p-6 rounded shadow">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold">Milkshake Toppings</h2>
+                <a href="{{ url_for('admin_lookup_edit') }}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">+ Add New</a>
+            </div>
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Value</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for item in items if item.type == 'Topping' %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ item.name }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ item.type }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            R{{ '%.2f'|format(item.value or 0) }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 flex space-x-2">
+                            <span class="text-red-600 cursor-pointer">Delete</span>
+                            <a href="{{ url_for('admin_lookup_edit', item_id=item.id) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+    </div>
+    
+    <div class="grid grid-cols-2 gap-6">
+
+        <div class="bg-white p-6 rounded shadow">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold">Config Values</h2>
+                <a href="{{ url_for('admin_lookup_edit') }}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">+ Add New</a>
+            </div>
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Value</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for item in items if item.type == 'Config' %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ item.name }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ item.type }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ item.value }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 flex space-x-2">
+                            <span class="text-red-600 cursor-pointer">Delete</span>
+                            <a href="{{ url_for('admin_lookup_edit', item_id=item.id) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="bg-white p-6 rounded shadow">
+            <h2 class="text-xl font-semibold mb-4">Add New</h2>
+            <div class="space-y-4">
+                <label class="block text-sm font-medium text-gray-700">Name</label>
+                <input type="text" placeholder="Insert" class="w-full border p-2 rounded bg-gray-100 cursor-not-allowed" disabled>
+                
+                <label class="block text-sm font-medium text-gray-700">Type</label>
+                <select class="w-full border p-2 rounded bg-gray-100 cursor-not-allowed" disabled>
+                    <option>Select</option>
+                </select>
+                
+                <label class="block text-sm font-medium text-gray-700">Value</label>
+                <input type="text" placeholder="Insert" class="w-full border p-2 rounded bg-gray-100 cursor-not-allowed" disabled>
+            </div>
+
+            <div class="mt-6 flex justify-end space-x-3">
+                <button type="button" class="bg-white text-gray-700 py-2 px-4 rounded-lg border border-gray-300 cursor-not-allowed" disabled>Cancel</button>
+                <button type="button" class="bg-blue-600 text-white py-2 px-4 rounded-lg cursor-not-allowed" disabled>Save</button>
+            </div>
+            <p class="mt-4 text-sm text-gray-500">Note: Click the **+ Add New** button above to open the actual editing interface.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

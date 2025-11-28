@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Simulated Payment</title></head>
+<body>
+  <div class="container">
+    <h2>Simulated Payment Provider</h2>
+    <p>Order: {{ order.id }} — Amount: R{{ '%.2f'|format(payment.amount) }}</p>
+    <p>Provider ref: <code>{{ payment.provider_ref }}</code></p>
+
+    <form id="simSuccess" method="post" action="{{ url_for('payments_webhook') }}" style="display:inline;">
+      <input type="hidden" name="provider_ref" value="{{ payment.provider_ref }}">
+      <input type="hidden" name="status" value="Success">
+    </form>
+
+    <form id="simFail" method="post" action="{{ url_for('payments_webhook') }}" style="display:inline;">
+      <input type="hidden" name="provider_ref" value="{{ payment.provider_ref }}">
+      <input type="hidden" name="status" value="Failed">
+    </form>
+
+    <button onclick="postJson('Success')">Simulate Success</button>
+    <button onclick="postJson('Failed')">Simulate Failure</button>
+
+    <script>
+    function postJson(status){
+      fetch("{{ url_for('payments_webhook') }}", {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({provider_ref: "{{ payment.provider_ref }}", status: status})
+      }).then(r=>{
+        if(r.ok){
+          window.location = "{{ url_for('order_detail', order_id=order.id) }}";
+        } else {
+          alert('Webhook call failed: ' + r.status);
+        }
+      }).catch(e=>{ alert('Network error: '+e); });
+    }
+    </script>
+  </div>
+</body>
+</html>

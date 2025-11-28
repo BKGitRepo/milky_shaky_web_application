@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}My Orders{% endblock %}
+{% block content %}
+<div class="max-w-4xl mx-auto py-8">
+  <h1 class="text-2xl font-bold mb-4">My Orders</h1>
+  {% if not orders %}
+    <div class="bg-white rounded p-6 shadow">You have no orders yet. <a class="text-blue-600" href="{{ url_for('order') }}">Create an order</a>.</div>
+  {% else %}
+    <div class="space-y-4">
+      {% for o in orders %}
+        <div class="bg-white p-4 rounded shadow flex justify-between items-center">
+          <div>
+            <div class="text-lg font-semibold">Order #{{ o.id }} — <span class="text-sm text-gray-500">{{ o.created_at.strftime('%Y-%m-%d %H:%M') }}</span></div>
+            <div class="text-sm text-gray-700">Status: <span class="font-medium">{{ o.status }}</span></div>
+            <div class="text-sm text-gray-700">Pickup: {{ o.pickup_time.strftime('%Y-%m-%d %H:%M') if o.pickup_time else 'N/A' }} • Location: {{ o.location or 'N/A' }}</div>
+          </div>
+          <div class="text-right">
+            <div class="text-lg font-bold">R{{ '%.2f'|format(o.total or 0) }}</div>
+            <a href="{{ url_for('order_detail', order_id=o.id) }}" class="mt-2 inline-block bg-blue-600 text-white px-4 py-2 rounded">Details</a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

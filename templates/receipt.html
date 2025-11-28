@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Receipt - Order {{ order.id }}</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    .header { display:flex; justify-content:space-between; margin-bottom:20px; }
+    .items { margin-top:10px; }
+    .items div { margin-bottom:8px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div><h2>Milky Shaky Drinks</h2><div>Order #{{ order.id }}</div></div>
+    <div><div>{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</div></div>
+  </div>
+
+  <div>
+    <strong>Items</strong>
+    <div class="items">
+      {% for it in order.get_items() %}
+        <div>{{ it.index if it.index is defined else loop.index }}. {{ it.flavour }} / {{ it.thick }} / {{ it.topping }} — R{{ '%.2f'|format(it.price or 0) }}</div>
+      {% endfor %}
+    </div>
+
+    <hr>
+    <div>Subtotal: R{{ '%.2f'|format(order.subtotal or 0) }}</div>
+    <div>Discount: R{{ '%.2f'|format(order.discount or 0) }}</div>
+    <div>VAT: R{{ '%.2f'|format(order.vat or 0) }}</div>
+    <div><strong>Total: R{{ '%.2f'|format(order.total or 0) }}</strong></div>
+    <div>Pickup: {{ order.pickup_time.strftime('%Y-%m-%d %H:%M') if order.pickup_time else 'N/A' }} • {{ order.location or 'N/A' }}</div>
+  </div>
+</body>
+</html>

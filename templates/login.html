@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+{% block content %}
+<div class="min-h-[70vh] flex items-center justify-center">
+  <div class="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
+    <!-- Tab-like header -->
+    <div class="flex items-center justify-between mb-6">
+      <div class="text-xl font-semibold">Log in to your account</div>
+      <div class="text-sm text-gray-500">Welcome back! Please enter your details.</div>
+    </div>
+
+    <div class="bg-gray-100 rounded-lg p-1 mb-6 grid grid-cols-2 gap-1">
+      <a href="{{ url_for('register') }}" class="text-center py-2 rounded-lg text-gray-600">Sign up</a>
+      <button class="bg-white text-blue-600 py-2 rounded-lg font-medium">Login</button>
+    </div>
+
+    <form method="post" novalidate>
+      {{ form.hidden_tag() }}
+      <div class="mb-4">
+        {{ form.email.label(class="block text-sm font-medium text-gray-700 mb-1") }}
+        {{ form.email(class="w-full border border-gray-300 rounded-md p-3 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400") }}
+        {% for err in form.email.errors %}
+          <div class="text-red-600 text-sm mt-1">{{ err }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="mb-4 relative">
+        {{ form.password.label(class="block text-sm font-medium text-gray-700 mb-1") }}
+        {{ form.password(class="w-full border border-gray-300 rounded-md p-3 pr-10 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400") }}
+        <!-- simple eye placeholder on right -->
+        <div class="absolute right-3 top-[44px] text-gray-400">
+          <!-- purely visual; no JS added -->
+          👁
+        </div>
+        {% for err in form.password.errors %}
+          <div class="text-red-600 text-sm mt-1">{{ err }}</div>
+        {% endfor %}
+      </div>
+
+      <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg mb-4">Sign in</button>
+
+      <div class="text-center text-sm text-gray-600">
+        Don't have an account? <a href="{{ url_for('register') }}" class="text-blue-600 font-medium">Sign up</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

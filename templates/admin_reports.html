@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+{% block title %}Management Reports{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto py-8">
+    <h1 class="text-3xl font-bold mb-6">Reporting History</h1>
+
+    <div class="bg-white p-4 rounded shadow-lg mb-6">
+        
+        <div class="flex justify-between items-center mb-4">
+            <form method="GET" action="{{ url_for('admin_reports') }}" class="flex items-center space-x-4">
+                <div class="text-sm font-semibold">Filter:</div>
+                <input type="date" name="start_date" value="{{ start_date_str }}" class="border p-2 rounded text-sm">
+                <span class="text-gray-500 text-sm">to</span>
+                <input type="date" name="end_date" value="{{ end_date_str }}" class="border p-2 rounded text-sm">
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm">Apply Filter</button>
+            </form>
+           <button onclick="window.location.href = '{{ url_for('admin_reports') }}'" class="text-blue-600 border border-blue-600 px-4 py-2 rounded-md text-sm">Clear Filter</button>
+        </div>
+        
+        <div class="border-b border-gray-200">
+            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                <a href="#orders" class="tab-link text-blue-600 border-b-2 border-blue-600 py-2 px-1 text-sm font-medium" data-target="orders-tab">Orders</a>
+                <a href="#trends" class="tab-link text-gray-500 hover:text-gray-700 hover:border-gray-300 border-b-2 border-transparent py-2 px-1 text-sm font-medium" data-target="trends-tab">Trends</a>
+                <a href="#audit" class="tab-link text-gray-500 hover:text-gray-700 hover:border-gray-300 border-b-2 border-transparent py-2 px-1 text-sm font-medium" data-target="audit-tab">Audit Lookup</a>
+            </nav>
+        </div>
+    </div>
+
+    <div id="orders-tab" class="tab-content">
+        <div class="bg-white p-6 rounded shadow-lg">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold">Total Orders: {{ total_orders }} results</h2>
+                <div class="flex space-x-2">
+                    <button class="border px-3 py-1 rounded text-sm">Copy</button>
+                    <button class="border px-3 py-1 rounded text-sm">Export</button>
+                </div>
+            </div>
+            
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Flavour</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Topping</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Consistency</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Status</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for order in orders %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">{{ order.created_at.strftime('%Y/%m/%d') }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">{{ order.created_at.strftime('%H:%M') }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">{{ order.first_item_flavour }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">{{ order.first_item_topping }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">{{ order.first_item_thick }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                {% if order.status == 'Confirmed' %}bg-green-100 text-green-800{% elif order.status == 'Pending Payment' %}bg-yellow-100 text-yellow-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                {{ order.status }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            </div>
+    </div>
+
+       <div id="trends-tab" class="tab-content hidden">
+                <div class="grid grid-cols-3 gap-6">
+            
+            <div class="bg-white p-6 rounded shadow">
+                <h2 class="text-xl font-semibold mb-4">Orders - Weekly</h2>
+                <div id="weekly-chart" class="h-64 flex items-end justify-around border-b border-gray-300 pb-1">
+                    </div>
+                <div class="text-xs text-gray-600 flex justify-around mt-1">
+                    <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+                </div>
+            </div>
+
+
+            <div class="bg-white p-6 rounded shadow">
+                <h2 class="text-xl font-semibold mb-4">Orders - Monthly</h2>
+                <div id="monthly-chart" class="h-64 flex items-end justify-around border-b border-gray-300 pb-1">
+                    </div>
+                <div class="text-xs text-gray-600 flex justify-around mt-1">
+                    <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span><span>Jul</span><span>Aug</span><span>Sep</span><span>Oct</span><span>Nov</span><span>Dec</span>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded shadow">
+                <h2 class="text-xl font-semibold mb-4">Orders - Yearly Growth</h2>
+                <div id="yearly-chart" class="h-64 relative">
+                    <div class="text-center text-gray-500 pt-16">
+                        Chart data rendered in console. Visualization is a basic placeholder.
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <div id="audit-tab" class="tab-content hidden">
+        <div class="bg-white p-6 rounded shadow-lg">
+            <h2 class="text-xl font-semibold mb-4">Audit Logs</h2>
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actor</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for log in audit_logs %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">{{ log.created_at.strftime('%Y/%m/%d %H:%M') }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">{{ log.action }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">{{ log.actor }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 overflow-hidden max-w-xs truncate">{{ log.details }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <script>
+        
+        const TRENDS_DATA = JSON.parse('{{ trends_data | tojson | safe }}');
+        
+        // Month names for mapping
+        const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        
+        // Maps SQLite's Sunday-start (0-6) to Monday-start (1-7)
+        const WEEK_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+        // --- Chart Rendering Function (Placeholder CSS Bars) ---
+        function renderTrendBars(data, containerId, labels, keyIndex, valueIndex) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            // Map data for easy lookup
+            const dataMap = new Map();
+            data.forEach(item => dataMap.set(String(item[keyIndex]), item[valueIndex]));
+
+
+            // Determine max count for scaling (or use a fixed max like 100)
+            const allCounts = data.map(item => item[valueIndex]);
+            const maxCount = Math.max(...allCounts, 1); // Ensure max is at least 1
+
+            // Helper to get day key (0-6) from label array index (0-6)
+            const getDayKey = (index) => {
+                // If using SQLite's %w (0=Sun, 1=Mon...): We reorder for display Mon-Sun
+                // Mon (index 0) is SQLite key 1. Sun (index 6) is SQLite key 0.
+                if (containerId === 'weekly-chart') {
+                    return index === 6 ? '0' : String(index + 1); // Display Mon-Sat as 1-6, Sun as 0
+                }
+                // For other charts, index often matches the key (e.g., month number)
+                return index < 9 ? `0${index + 1}` : String(index + 1);
+            };
+
+            if (allCounts.length === 0 && maxCount === 1) {
+                 container.innerHTML = '<p class="text-center text-gray-500 pt-16 w-full">No order data available for this date range.</p>';
+                 return;
+            }
+
+            container.innerHTML = ''; // Clear previous bars
+
+            labels.forEach((label, index) => {
+                let key = containerId === 'weekly-chart' ? getDayKey(index) : (index < 9 ? `0${index + 1}` : String(index + 1));
+                
+                // Monthly keys are 01-12, Weekly keys are 0-6
+                if (containerId === 'weekly-chart') {
+                     // Weekly display is Mon-Sun, but SQLite returns 0=Sun. 
+                     // We use the index of WEEK_DAYS to query the dataMap
+                     key = WEEK_DAYS.indexOf(labels[index]);
+                } else if (containerId === 'monthly-chart') {
+                     key = index < 9 ? `0${index + 1}` : String(index + 1);
+                }
+                
+                // Get the count, defaulting to 0
+                const count = dataMap.get(String(key)) || 0; 
+                const heightPercent = (count / maxCount) * 100;
+
+                const bar = document.createElement('div');
+                bar.className = 'w-10 bg-blue-600 rounded-t-lg transition-all duration-300 hover:bg-blue-400 cursor-pointer relative';
+                bar.style.height = `${heightPercent}%`;
+                bar.title = `${label}: ${count} Orders`;
+                
+                // Add a small label above the bar
+                const barLabel = document.createElement('span');
+                barLabel.className = 'absolute top-[-20px] left-1/2 transform -translate-x-1/2 text-xs font-medium text-gray-700';
+                if (count > 0) barLabel.textContent = count;
+                bar.appendChild(barLabel);
+
+                container.appendChild(bar);
+            });
+        }
+        
+        // --- Render Charts on Tab Switch ---
+        function renderAllCharts() {
+            // Adjust labels for Weekly to show Mon-Sun
+            const weeklyLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            const monthlyLabels = MONTHS;
+            
+            // Weekly chart data (using index 1 for key, 0 for count)
+            renderTrendBars(TRENDS_DATA.weekly, 'weekly-chart', weeklyLabels, 1, 0);
+
+            // Monthly chart data (using index 1 for key, 0 for count)
+            renderTrendBars(TRENDS_DATA.monthly, 'monthly-chart', monthlyLabels, 1, 0);
+            
+            // Yearly chart data (for console viewing/debugging)
+            console.log("Yearly Growth Data:", TRENDS_DATA.yearly);
+            
+            // Placeholder: Replace with Chart.js or similar for proper visualization
+            document.getElementById('yearly-chart').innerHTML = `<h3 class="text-lg font-semibold mb-2">Yearly Growth</h3><p class="text-sm text-gray-600">Total orders by year:</p><ul class="text-sm space-y-1 mt-2">${TRENDS_DATA.yearly.map(item => `<li>${item[1]}: ${item[0]} orders</li>`).join('')}</ul>`;
+        }
+        document.addEventListener('DOMContentLoaded', function () {
+            const tabs = document.querySelectorAll('.tab-link');
+            const contents = document.querySelectorAll('.tab-content');
+
+            function switchTab(targetId) {
+                // Hide all content and reset all tabs
+                contents.forEach(content => content.classList.add('hidden'));
+                tabs.forEach(tab => {
+                    tab.classList.remove('text-blue-600', 'border-blue-600');
+                    tab.classList.add('text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300', 'border-transparent');
+
+                });
+
+                // Show target content and activate target tab
+                const targetContent = document.getElementById(targetId);
+                if (targetContent) {
+                    targetContent.classList.remove('hidden');
+                }
+                
+                const targetTab = document.querySelector(`[data-target='${targetId}']`);
+                if (targetTab) {
+                    targetTab.classList.add('text-blue-600', 'border-blue-600');
+                    targetTab.classList.remove('text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300', 'border-transparent');
+                }
+
+                // Run chart rendering only when the Trends tab is activated
+                if (targetId === 'trends-tab') {
+                    renderAllCharts();
+                }
+            }
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const targetId = tab.dataset.target;
+                    history.pushState(null, '', tab.getAttribute('href')); // Update URL hash
+                    switchTab(targetId);
+                });
+            });
+
+            // Initial load based on URL hash or default to orders
+            const initialHash = window.location.hash.substring(1) || 'orders';
+            const initialTarget = initialHash + '-tab';
+            switchTab(initialTarget);
+        });
+    </script>
+</div>
+{% endblock %}

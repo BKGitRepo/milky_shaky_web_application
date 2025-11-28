@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+{% block title %}Build Order{% endblock %}
+{% block content %}
+<div class="min-h-[70vh] flex items-start justify-center">
+  <div class="w-full max-w-4xl grid grid-cols-3 gap-6">
+    <div class="col-span-2 bg-white rounded-lg shadow-lg p-6">
+      <h2 class="text-xl font-semibold mb-4">Order Placement</h2>
+
+      <form id="orderForm" method="post">
+        {{ form.hidden_tag() }}
+
+        <div class="mb-4 flex items-center gap-3">
+          <label class="block text-sm font-medium text-gray-700">Number of Milkshakes Required</label>
+          {{ form.number_of_milkshakes(id="numShakes", class="w-20 p-2 border rounded") }}
+          <button id="buildBtn" type="button" class="ml-3 inline-block bg-blue-600 text-white px-4 py-2 rounded">Build</button>
+        </div>
+
+        <div id="shakesContainer" class="space-y-4"></div>
+
+        <div class="mt-6">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Pickup location</label>
+          {{ form.location(class="w-full border p-3 rounded") }}
+        </div>
+
+        <div class="mt-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Pickup time</label>
+          <input id="pickup_time" name="pickup_time" type="datetime-local" class="w-full border p-3 rounded" />
+        </div>
+
+        {{ form.order_data(id="order_data") }}
+
+        <div class="mt-6">
+          {{ form.submit(class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded", id="submitBtn") }}
+        </div>
+      </form>
+    </div>
+
+    <div class="col-span-1 bg-white rounded-lg shadow-lg p-6">
+      <h3 class="text-lg font-semibold mb-4">Order Summary</h3>
+      <div id="summary" class="text-sm text-gray-700">
+        <div>Number of Drinks: <span id="summaryCount">0</span></div>
+        <div class="mt-2">Subtotal: R<span id="summarySubtotal">0.00</span></div>
+        <div class="mt-2">VAT (15%): R<span id="summaryVat">0.00</span></div>
+        <div class="mt-2">Frequent Customer Discount: R<span id="summaryDiscount">0.00</span></div>
+        <div class="mt-2">Total: R<span id="summaryTotal" class="font-bold">0.00</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+// --- START: ADD DYNAMIC DATA BLOCK ---
+const LOOKUP_DATA = JSON.parse('{{ lookup_data | tojson | safe }}');
+const FLAVOUR_PRICES = LOOKUP_DATA.flavour_prices || {};
+const CONSISTENCY_PRICES = LOOKUP_DATA.consistency_prices || {};
+const TOPPING_PRICES = LOOKUP_DATA.topping_prices || {};
+const VAT_RATE = LOOKUP_DATA.VAT_RATE || 0.15;
+const MAX_DRINKS = LOOKUP_DATA.MAX_DRINKS || 10;
+
+// Helper function to map price lists to <option> elements
+function generateOptions(priceList, defaultText) {
+  let options = `<option value="">${defaultText}</option>`;
+  for (const [key, value] of Object.entries(priceList)) {
+    // Key is lowercase_with_underscore; Display name is Title Case
+    const displayName = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    options += `<option value="${key}">${displayName}</option>`;
+  }
+  return options;
+}
+// --- END: ADD DYNAMIC DATA BLOCK ---
+
+function formatCurrency(n){ return n.toFixed(2); }
+
+function buildShakes(n){
+  const container = document.getElementById('shakesContainer');
+  container.innerHTML = '';
+  
+  // --- ADDED: Generate Dynamic Options ---
+  const flavourOptions = generateOptions(FLAVOUR_PRICES, "Select flavour");
+  const consistencyOptions = generateOptions(CONSISTENCY_PRICES, "Select consistency");
+  const toppingOptions = generateOptions(TOPPING_PRICES, "Select topping");
+  // ------------------------------------
+
+  for(let i=1;i<=n;i++){
+    const div = document.createElement('div');
+    div.className = 'p-4 border rounded';
+    div.innerHTML = `
+      <div class="flex justify-between items-center mb-2">
+        <div class="font-semibold">Milkshake ${i}</div>
+        <div class="text-sm text-gray-500">Cost: R<span class="costVal">0.00</span></div>
+      </div>
+      <div class="grid grid-cols-3 gap-3">
+        <select class="flavour p-2 border rounded">
+          ${flavourOptions}
+        </select>
+        <select class="thick p-2 border rounded">
+          ${consistencyOptions}
+        </select>
+        <select class="topping p-2 border rounded">
+          ${toppingOptions}
+        </select>
+      </div>
+      <div class="mt-3"><button type="button" class="doneBtn w-full bg-blue-50 text-blue-700 py-2 rounded" disabled>Done</button></div>
+    `;
+    container.appendChild(div);
+  }
+  attachListeners();
+  recalcSummary();
+}
+
+function attachListeners(){
+  document.querySelectorAll('#shakesContainer select').forEach(s=>{
+    s.addEventListener('change', () => {
+      const row = s.closest('div.p-4');
+      const flavour = row.querySelector('.flavour').value;
+      const thick = row.querySelector('.thick').value;
+      const topping = row.querySelector('.topping').value;
+      const doneBtn = row.querySelector('.doneBtn');
+      // enable Done only when all selected
+      if(flavour && thick && topping){
+        doneBtn.disabled = false;
+      } else {
+        doneBtn.disabled = true;
+      }
+      recalcSummary();
+    });
+  });
+  document.querySelectorAll('.doneBtn').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      b.textContent = 'Saved';
+      b.classList.remove('bg-blue-50');
+      b.classList.add('bg-green-50');
+    });
+  });
+}
+
+function recalcSummary(){
+  const rows = document.querySelectorAll('#shakesContainer > div');
+  let subtotal = 0;
+  rows.forEach(row=>{
+    const flavour = row.querySelector('.flavour');
+    const thick = row.querySelector('.thick');
+    const topping = row.querySelector('.topping');
+    let price = 0;
+    if(flavour && flavour.value) price += (FLAVOUR_PRICES[flavour.value]||0);
+    if(thick && thick.value) price += (CONSISTENCY_PRICES[thick.value]||0);
+    if(topping && topping.value) price += (TOPPING_PRICES[topping.value]||0);
+    row.querySelector('.costVal').textContent = formatCurrency(price);
+    subtotal += price;
+  });
+  // frequent customer discount is computed server-side; client shows zero by default
+  let discount = 0.00;
+  let vat = (subtotal - discount) * VAT_RATE;
+  let total = subtotal - discount + vat;
+  document.getElementById('summaryCount').textContent = rows.length;
+  document.getElementById('summarySubtotal').textContent = formatCurrency(subtotal);
+  document.getElementById('summaryVat').textContent = formatCurrency(vat);
+  document.getElementById('summaryDiscount').textContent = formatCurrency(discount);
+  document.getElementById('summaryTotal').textContent = formatCurrency(total);
+  // disable submit until every row's Done enabled (i.e. all selections made)
+  const allDoneEnabled = Array.from(rows).every(r => {
+    const f = r.querySelector('.flavour').value;
+    const c = r.querySelector('.thick').value;
+    const t = r.querySelector('.topping').value;
+    return f && c && t;
+  });
+  document.getElementById('submitBtn').disabled = !allDoneEnabled;
+}
+
+document.getElementById('buildBtn').addEventListener('click', ()=>{
+  const n = parseInt(document.getElementById('numShakes').value) || 1;
+  if(n < 1 || n > MAX_DRINKS){ alert('Number of drinks must be between 1 and ' + MAX_DRINKS); return; }
+  buildShakes(n);
+});
+
+// assemble order_data and allow submit
+document.getElementById('orderForm').addEventListener('submit', function(e){
+  const rows = document.querySelectorAll('#shakesContainer > div');
+  const items = [];
+  for(const row of rows){
+    const flavour = row.querySelector('.flavour').value;
+    const thick = row.querySelector('.thick').value;
+    const topping = row.querySelector('.topping').value;
+    if(!flavour || !thick || !topping){
+      e.preventDefault();
+      alert('Please complete all drink entries before continuing.');
+      return false;
+    }
+    const price = (FLAVOUR_PRICES[flavour]||0) + (CONSISTENCY_PRICES[thick]||0) + (TOPPING_PRICES[topping]||0);
+    items.push({flavour, thick, topping, price});
+  }
+  document.getElementById('order_data').value = JSON.stringify(items);
+  // copy pickup_time value into WTForms pickup_time if needed (name matches)
+  const pickup = document.getElementById('pickup_time').value;
+  if(!pickup){ e.preventDefault(); alert('Please choose pickup time.'); return false; }
+});
+</script>
+{% endblock %}
