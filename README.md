@@ -15,11 +15,38 @@ Milky Shaky Drinks is a Flask-based web application designed to manage custom mi
 | **Payment Gateway** | Payments (Simulated)     | Hosted Checkout flow implemented via a POST redirect.                 |
 | **Async Tasks**   | Python `threading`               | Sends emails in the background to prevent blocking web requests.      |
 
-## 📽️ Application Preview (Video Snippets)
+##  Application Preview (Screenshots)
 
 Below are short video snippets demonstrating the application's core functionality, following a typical user journey.
 
 ---
 
 ### 1. User Registration and Login
-<video src="assets/videos/1.mkv" width="640" controls></video>
+<img src="assets/images/1.PNG" width=700>
+
+---
+
+### 2. Dynamic Order Placement
+<img src="assets/images/2.PNG" width=700>
+
+---
+### 3. Payment Flow & Confirmation
+<img src="assets/images/3.PNG" width=700>
+---
+
+### 4. Admin Lookup Management (Manager View)
+<table>
+  <tr>
+    <td><img src="assets/images/4.1.PNG" width=700></td>
+    <td><img src="assets/images/4.2.PNG" width=700></td>
+  </tr>
+  <tr>
+    <td><img src="assets/images/4.3.PNG" width=700></td>
+    <td><img src="assets/images/4.4.PNG" width=700></td>
+  </tr>
+</table>
+
+---
+
+## Installation
+Instructions for setting up the project locally.
