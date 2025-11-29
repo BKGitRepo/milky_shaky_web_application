@@ -50,3 +50,31 @@ Below are short video snippets demonstrating the application's core functionalit
 
 ## Installation
 Instructions for setting up the project locally.
+
+
+---
+
+#### 1. Clone the repository
+
+```bash
+git clone https://github.com/BKGitRepo/milky_shaky_web_application.git
+cd your-repo
+```
+#### 2. Create and activate a virtual environment
+```bash
+python3 -m venv venv
+source venv/bin/activate      # macOS / Linux
+venv\Scripts\activate         # Windows
+```
+#### 3. Install the required dependencies
+```bash
+pip install -r requirements.txt
+```
+#### 4. Start the development server
+```bash
+flask run
+```
+#### 5. Admin Login Credentials
+      -Email: admin@gmail.com
+      -Password: manager@1234
+These credentials unlock the Manager Panel where lookup tables and system configurations can be managed.
